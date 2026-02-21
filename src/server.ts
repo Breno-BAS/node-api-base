@@ -1,19 +1,26 @@
-import express, { urlencoded } from 'express';
-import 'dotenv/config';
+import "dotenv/config";
+import express, { Request, Response } from 'express';
 import cors from 'cors';
-import { mainRouter } from './routes/main';
-import helmet from 'helmet';
+import mainRoutes from './routes/main';
 
-const server = express();
-server.use(helmet());
-server.use(cors());
-server.use(urlencoded({ extended: true }));
-server.disable('x-powered-by');
-server.use(express.json());
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-server.use(mainRouter);
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const port = process.env.PORT || 3000;
-server.listen(port, () => {
-    console.log(`🚀 Servidor rodando em http://localhost:${port}`);
-})
+app.use('/api', mainRoutes);
+
+app.use((req: Request, res: Response) => {
+  res.status(404).json({ error: 'Route not found' });
+});
+
+app.use((err: Error, req: Request, res: Response, next: Function) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server is running on http://localhost:${PORT}`);
+});
