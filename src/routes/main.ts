@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { usersTable } from "../db/schema";
 import { db } from "../libs/drizzle";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { error } from "console";
 
 const router = Router();
@@ -17,7 +17,7 @@ router.get("/user", async (req, res) => {
       .select({
          id: usersTable.id,
          name: usersTable.name,
-         email: usersTable.email,
+         email: sql<string>`lower(${usersTable.email})`,
          age: usersTable.age,
       })
       .from(usersTable);
