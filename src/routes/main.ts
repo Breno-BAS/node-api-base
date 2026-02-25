@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { usersTable } from "../db/schema";
 import { db } from "../libs/drizzle";
-import { eq, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { error } from "console";
 
 const router = Router();
@@ -20,7 +20,9 @@ router.get("/user", async (req, res) => {
          email: sql<string>`lower(${usersTable.email})`,
          age: usersTable.age,
       })
-      .from(usersTable);
+      .from(usersTable)
+      .orderBy(desc(usersTable.name))
+      .limit(2);
 
    res.json({ users });
 });
@@ -29,9 +31,9 @@ router.post("/user", async (req, res) => {
    type UserInsert = typeof usersTable.$inferInsert;
 
    const newUser: UserInsert = {
-      name: "Thiago",
-      email: "thiago.andrade@gmail.com",
-      age: 29,
+      name: "Cristina",
+      email: "cristina.silva@gmail.com",
+      age: 50,
    };
    await db.insert(usersTable).values(newUser);
    // INSERT INTO nome da tabela VALUES(...)
