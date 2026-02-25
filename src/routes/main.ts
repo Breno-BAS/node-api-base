@@ -6,12 +6,21 @@ import { error } from "console";
 
 const router = Router();
 
-router.get("/ping", (req, res) => {
-   res.json({ pong: true });
-});
+// router.get("/user", async (req, res) => {
+//    const users = await db.select().from(usersTable);
+
+//    res.json({ users });
+// });
 
 router.get("/user", async (req, res) => {
-   const users = await db.select().from(usersTable);
+   const users = await db
+      .select({
+         id: usersTable.id,
+         name: usersTable.name,
+         email: usersTable.email,
+         age: usersTable.age,
+      })
+      .from(usersTable);
 
    res.json({ users });
 });
