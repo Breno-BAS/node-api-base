@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { usersTable } from "../db/schema";
+import { pestsTable, usersTable } from "../db/schema";
 import { db } from "../libs/drizzle";
 import { desc, eq, sql } from "drizzle-orm";
 import { error } from "console";
@@ -12,20 +12,34 @@ const router = Router();
 //    res.json({ users });
 // });
 
+// router.get("/user", async (req, res) => {
+//    const users = await db
+//       .select({
+//          id: usersTable.id,
+//          name: usersTable.name,
+//          email: sql<string>`lower(${usersTable.email})`,
+//          age: usersTable.age,
+//       })
+//       .from(usersTable)
+//       .orderBy(desc(usersTable.name))
+//       .limit(2);
+
+//    res.json({ users });
+// });
+
 router.get("/user", async (req, res) => {
    const users = await db
       .select({
          id: usersTable.id,
          name: usersTable.name,
-         email: sql<string>`lower(${usersTable.email})`,
-         age: usersTable.age,
+         petName: pestsTable.name,
+         petId: pestsTable.id,
       })
       .from(usersTable)
-      .orderBy(desc(usersTable.name))
-      .limit(2);
+      .innerJoin(pestsTable, eq(pestsTable.ownerId, usersTable.id))
 
    res.json({ users });
-});
+}); //inner join
 
 router.post("/user", async (req, res) => {
    type UserInsert = typeof usersTable.$inferInsert;
