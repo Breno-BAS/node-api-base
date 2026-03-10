@@ -15,6 +15,13 @@
       "when": 1771612937125,
       "tag": "0001_majestic_komodo",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773160061683,
+      "tag": "0002_far_true_believers",
+      "breakpoints": true
     }
   ]
 }
