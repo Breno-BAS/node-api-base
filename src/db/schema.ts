@@ -5,7 +5,8 @@ export const usersTable = pgTable('users', {
     name: varchar({ length: 255 }).notNull(),
     age: integer().notNull(),
     email: varchar({ length: 255 }).notNull().unique(),
-    obs: varchar({ length: 255 })
+    obs: varchar({ length: 255 }),
+    balance: integer().default(100)
 });
 
 export const pestsTable = pgTable('pests', {

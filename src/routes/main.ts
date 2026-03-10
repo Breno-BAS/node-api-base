@@ -28,42 +28,75 @@ const router = Router();
 // });
 
 router.get("/user", async (req, res) => {
-   const users = await db
-      .select({
-         id: usersTable.id,
-         name: usersTable.name,
-         petName: pestsTable.name,
-         petId: pestsTable.id,
-      })
-      .from(usersTable)
-      .innerJoin(pestsTable, eq(pestsTable.ownerId, usersTable.id))
+  const users = await db
+    .select({
+      id: usersTable.id,
+      name: usersTable.name,
+      petName: pestsTable.name,
+      petId: pestsTable.id,
+    })
+    .from(usersTable)
+    .innerJoin(pestsTable, eq(pestsTable.ownerId, usersTable.id));
 
-   res.json({ users });
+  res.json({ users });
 }); //inner join
 
 router.post("/user", async (req, res) => {
-   type UserInsert = typeof usersTable.$inferInsert;
+  type UserInsert = typeof usersTable.$inferInsert;
 
-   const newUser: UserInsert = {
-      name: "Cristina",
-      email: "cristina.silva@gmail.com",
-      age: 50,
-   };
-   await db.insert(usersTable).values(newUser);
-   // INSERT INTO nome da tabela VALUES(...)
-   res.status(201).json({ error: "Create user" });
+  const newUser: UserInsert = {
+    name: "Cristina",
+    email: "cristina.silva@gmail.com",
+    age: 50,
+  };
+  await db.insert(usersTable).values(newUser);
+  // INSERT INTO nome da tabela VALUES(...)
+  res.status(201).json({ error: "Create user" });
+});
+
+const transf = async (val: number, userFrom: number, userTo: number) => {
+   await db.transaction(async (tx) => {
+      const [ account ] = await tx
+      .select({balance: usersTable.balance})
+      .from(usersTable)
+      .where(eq(usersTable.id, userFrom));
+      
+      if(account.balance && account.balance< val) {
+         throw new Error("Saldo insuficiente");
+         tx.rollback();
+      }
+
+      await tx
+         .update(usersTable)
+         .set({ balance: sql`${usersTable.balance} - ${val}` })
+         .where(eq(usersTable.id, userFrom));
+
+      await tx
+      .update(usersTable)
+      .set({ balance: sql`${usersTable.balance} + ${val}` })
+      .where(eq(usersTable.id, userTo));
+   });
+}
+
+router.post("/deposit", async (req, res) => {
+   await transf(50, 1, 2);
+
+  res.json({ error: "Deposit completion" });
 });
 
 router.put("/user", async (req, res) => {
-   await db.update(usersTable).set({ name: "Fernanda" }).where(eq(usersTable.name, "Maria Silva"));
+  await db
+    .update(usersTable)
+    .set({ name: "Fernanda" })
+    .where(eq(usersTable.name, "Maria Silva"));
 
-   res.json({ error: "update completion" });
+  res.json({ error: "update completion" });
 });
 
 router.delete("/user", async (req, res) => {
-   await db.delete(usersTable).where(eq(usersTable.name, "Thiago"));
+  await db.delete(usersTable).where(eq(usersTable.name, "Thiago"));
 
-   res.json({ error: "delete completion" });
+  res.json({ error: "delete completion" });
 });
 
 export default router;
