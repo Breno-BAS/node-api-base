@@ -1,4 +1,5 @@
-import { integer, pgTable, varchar, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { integer, pgTable, varchar, timestamp, pgEnum, text } from "drizzle-orm/pg-core";
+import { v4 } from "uuid";
 
 const timestamps = {
     createdAt: timestamp().defaultNow(),
@@ -24,3 +25,10 @@ export const pestsTable = pgTable('pests', {
     ownerId: integer().notNull().references(() => usersTable.id),
     ...timestamps
 }); // Relação 1:N
+
+export const postsTable = pgTable('posts', {
+    id: varchar({ length: 100 }).primaryKey().$default(() => v4()),
+    title: varchar({ length: 255 }).notNull(),
+    body: text(),
+    ownerId: integer().notNull().references(() => usersTable.id),
+});
