@@ -40,3 +40,4 @@ Sendo `<url>` o diretório do seu repositório remoto.
 
 Comandos uteis: npx drizzle-kit generate -> Comando para criar pasta com historico de mudança
 npx drizzle-kit migrate -> Comando para atualizar o banco
+npx drizzle-kit studio -> Comando para utilizar o banco de dados no navegador local;
