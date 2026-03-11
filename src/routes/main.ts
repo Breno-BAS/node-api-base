@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { pestsTable, usersTable } from "../db/schema";
+import { pestsTable, postsTable, usersTable } from "../db/schema";
 import { db } from "../libs/drizzle";
 import { desc, eq, sql } from "drizzle-orm";
 import { error } from "console";
@@ -77,6 +77,16 @@ const transf = async (val: number, userFrom: number, userTo: number) => {
       .where(eq(usersTable.id, userTo));
    });
 }
+
+router.post("/post", async (req, res) => {
+   await db.insert(postsTable).values({
+      title: "Pulga",
+      body: 'Corpo teste',
+      ownerId: 1
+   });
+
+  res.json({ error: "Post created" });
+});
 
 router.post("/deposit", async (req, res) => {
    await transf(50, 1, 2);
