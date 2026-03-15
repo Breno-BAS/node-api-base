@@ -50,6 +50,13 @@
       "when": 1773191660522,
       "tag": "0006_melted_blockbuster",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1773499261023,
+      "tag": "0007_bumpy_thunderbird",
+      "breakpoints": true
     }
   ]
 }

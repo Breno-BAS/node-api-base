@@ -1,148 +1,30 @@
 import { Router } from "express";
-import { pestsTable, postsTable, usersTable } from "../db/schema";
-import { db } from "../libs/drizzle";
-import { desc, eq, sql } from "drizzle-orm";
-import { error } from "console";
+import * as ApiController  from "../controllers/ApiController";
 
 const router = Router();
 
-// router.get("/user", async (req, res) => {
-//    const users = await db.select().from(usersTable);
+// Routes for users
+router.get("/user", ApiController.listUsersWithPets);
 
-//    res.json({ users });
-// });
+router.post("/user", ApiController.createUser);
 
-// router.get("/user", async (req, res) => {
-//    const users = await db
-//       .select({
-//          id: usersTable.id,
-//          name: usersTable.name,
-//          email: sql<string>`lower(${usersTable.email})`,
-//          age: usersTable.age,
-//       })
-//       .from(usersTable)
-//       .orderBy(desc(usersTable.name))
-//       .limit(2);
+router.put("/user/:id", ApiController.updateUser);
 
-//    res.json({ users });
-// });
+router.delete("/user/:id", ApiController.deleteUser);
 
-router.get("/user", async (req, res) => {
-  const users = await db
-    .select({
-      id: usersTable.id,
-      name: usersTable.name,
-      petName: pestsTable.name,
-      petId: pestsTable.id,
-    })
-    .from(usersTable)
-    .innerJoin(pestsTable, eq(pestsTable.ownerId, usersTable.id));
+// Routes for posts
+router.post("/post", ApiController.createPost);
 
-  res.json({ users });
-}); //inner join
+// Route for fund transfer
+router.post("/deposit", ApiController.transferFunds);
 
-router.post("/user", async (req, res) => {
-  type UserInsert = typeof usersTable.$inferInsert;
+// Simple health check
+router.get('/ping', ApiController.ping);
 
-  const newUser: UserInsert = {
-    name: "Cristina",
-    email: "cristina.silva@gmail.com",
-    age: 50,
-  };
-  await db.insert(usersTable).values(newUser);
-  // INSERT INTO nome da tabela VALUES(...)
-  res.status(201).json({ error: "Create user" });
-});
+router.post('/register', ApiController.register);
 
-const transf = async (val: number, userFrom: number, userTo: number) => {
-   await db.transaction(async (tx) => {
-      const [ account ] = await tx
-      .select({balance: usersTable.balance})
-      .from(usersTable)
-      .where(eq(usersTable.id, userFrom));
-      
-      if(account.balance && account.balance< val) {
-         throw new Error("Saldo insuficiente");
-         tx.rollback();
-      }
+router.post('/login', ApiController.login);
 
-      await tx
-         .update(usersTable)
-         .set({ balance: sql`${usersTable.balance} - ${val}` })
-         .where(eq(usersTable.id, userFrom));
-
-      await tx
-      .update(usersTable)
-      .set({ balance: sql`${usersTable.balance} + ${val}` })
-      .where(eq(usersTable.id, userTo));
-   });
-}
-
-router.post("/post", async (req, res) => {
-   await db.insert(postsTable).values({
-      title: "Pulga",
-      body: 'Corpo teste',
-      ownerId: 1
-   });
-
-  res.json({ error: "Post created" });
-});
-
-router.post("/deposit", async (req, res) => {
-   await transf(50, 1, 2);
-
-  res.json({ error: "Deposit completion" });
-});
-
-router.put("/user", async (req, res) => {
-  await db
-    .update(usersTable)
-    .set({ name: "Fernanda" })
-    .where(eq(usersTable.name, "Maria Silva"));
-
-  res.json({ error: "update completion" });
-});
-
-router.delete("/user", async (req, res) => {
-  await db.delete(usersTable).where(eq(usersTable.name, "Thiago"));
-
-  res.json({ error: "delete completion" });
-});
+router.get('/list', ApiController.list);
 
 export default router;
-
-// TESTANDO PELO INSOMINA
-// import { Router } from 'express';
-// import { usersTable } from '../db/schema';
-// import { db } from '../libs/drizzle';
-
-// const router = Router();
-
-// router.get('/ping', (req, res) => {
-//     res.json({ pong: true });
-// });
-
-// router.post('/user', async (req, res) => {
-//     try {
-//         // 1. Extrai as variáveis que vieram do Body (JSON) do Insomnia
-//         const { name, age, email, obs } = req.body;
-
-//         // 2. Passa essas variáveis para o Drizzle
-//         const newUser = await db.insert(usersTable).values({
-//             name: name,
-//             age: age,
-//             email: email,
-//             obs: obs
-//         }).returning();
-
-//         // 3. Devolve o usuário criado como resposta para o Insomnia!
-//         res.status(201).json(newUser);
-
-//     } catch (error) {
-//         // Se algo der errado (ex: email duplicado), cai aqui sem derrubar o servidor
-//         console.error("Erro ao inserir no banco:", error);
-//         res.status(400).json({ error: "Não foi possível criar o usuário. Verifique os dados e tente novamente." });
-//     }
-// });
-
-// export default router;

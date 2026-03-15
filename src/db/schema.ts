@@ -1,4 +1,4 @@
-import { integer, pgTable, varchar, timestamp, pgEnum, text } from "drizzle-orm/pg-core";
+import { integer, pgTable, varchar, timestamp, pgEnum, text, serial } from "drizzle-orm/pg-core";
 import { v4 } from "uuid";
 
 const timestamps = {
@@ -31,4 +31,10 @@ export const postsTable = pgTable('posts', {
     title: varchar({ length: 255 }).notNull(),
     body: text(),
     ownerId: integer().notNull().references(() => usersTable.id),
+});
+
+export const usuarioTable = pgTable('usuario', {
+    id: serial('id').primaryKey(), 
+    email: varchar('email', { length: 255 }),
+    password: varchar('password', { length: 255 })
 });
