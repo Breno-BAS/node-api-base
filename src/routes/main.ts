@@ -5,7 +5,9 @@ import * as ApiController  from "../controllers/ApiController";
 const router = Router();
 
 // Routes for users
-router.get("/user", ApiController.listUsersWithPets);
+router.get("/user/with-pets", ApiController.listUsersWithPets);
+
+router.get("/user", ApiController.listUsers);
 
 router.post("/user", ApiController.createUser);
 
