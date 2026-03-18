@@ -1,9 +1,13 @@
+import { Request, Response } from 'express';
 import { db } from "../libs/drizzle";
 import { pestsTable, postsTable, usersTable, usuarioTable } from "../db/schema";
+import  jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 import { desc, eq, sql } from "drizzle-orm";
-import e from "express";
 
-export const listUsersWithPets = async (req: any, res: any) => {
+dotenv.config();
+
+export const listUsersWithPets = async (req: Request, res: Response) => {
   try {
     const users = await db
       .select({
@@ -22,7 +26,18 @@ export const listUsersWithPets = async (req: any, res: any) => {
   }
 };
 
-export const createUser = async (req: any, res: any) => {
+export const listUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await db.select().from(usersTable);
+
+    res.json(users); 
+  } catch (error) {
+    console.error("Error listing users:", error);
+    res.status(500).json({ error: "Failed to list users" });
+  }
+};
+
+export const createUser = async (req: Request, res: Response) => {
   try {
     type UserInsert = typeof usersTable.$inferInsert;
     const { name, email, age } = req.body;
@@ -34,7 +49,6 @@ export const createUser = async (req: any, res: any) => {
       name,
       email,
       age,
-      // Assuming balance is optional or has a default value
       balance: req.body.balance || 0, 
     };
     await db.insert(usersTable).values(newUser);
@@ -45,7 +59,7 @@ export const createUser = async (req: any, res: any) => {
   }
 };
 
-export const updateUser = async (req: any, res: any) => {
+export const updateUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { name, age, email, balance } = req.body;
@@ -76,7 +90,7 @@ export const updateUser = async (req: any, res: any) => {
   }
 };
 
-export const deleteUser = async (req: any, res: any) => {
+export const deleteUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -93,7 +107,7 @@ export const deleteUser = async (req: any, res: any) => {
   }
 };
 
-export const createPost = async (req: any, res: any) => {
+export const createPost = async (req: Request, res: Response) => {
   try {
     const { title, body, ownerId } = req.body;
 
@@ -114,7 +128,7 @@ export const createPost = async (req: any, res: any) => {
   }
 };
 
-export const transferFunds = async (req: any, res: any) => {
+export const transferFunds = async (req: Request, res: Response) => {
   try {
     const { amount, fromUserId, toUserId } = req.body;
 
@@ -150,11 +164,11 @@ export const transferFunds = async (req: any, res: any) => {
   }
 };
 
-export const ping = (req: any, res: any) => {
+export const ping = (req: Request, res: Response) => {
   res.json({ pong: true });
 };
 
-export const login = async (req: any, res: any) => {
+export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
@@ -171,14 +185,20 @@ export const login = async (req: any, res: any) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    res.json({ message: "Login successful", user: { id: user.id, email: user.email } });
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET_KEY as string, 
+      { expiresIn: '2h' } // Boa prática: define que o token perde a validade em 2 horas
+    );
+
+    res.json({ status: true, token });
   } catch (error) {
     console.error("Error logging in:", error);
     res.status(500).json({ error: "Failed to login" });
   }
 };
 
-export const register = async (req: any, res: any) => {
+export const register = async (req: Request, res: Response) => {
   try {
     if (req.body.email && req.body.password) {
       let { email, password } = req.body;
@@ -215,7 +235,7 @@ export const register = async (req: any, res: any) => {
   }
 };
 
-export const list = async (req: any, res: any) => {
+export const list = async (req: Request, res: Response) => {
   try {
     const users = await db
     .select({
