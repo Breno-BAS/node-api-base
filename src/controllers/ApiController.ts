@@ -1,7 +1,7 @@
-import { Request, Response } from 'express';
+import { Request, Response } from "express";
 import { db } from "../libs/drizzle";
 import { pestsTable, postsTable, usersTable, usuarioTable } from "../db/schema";
-import  jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { desc, eq, sql } from "drizzle-orm";
 
@@ -30,7 +30,7 @@ export const listUsers = async (req: Request, res: Response) => {
   try {
     const users = await db.select().from(usersTable);
 
-    res.json(users); 
+    res.json(users);
   } catch (error) {
     console.error("Error listing users:", error);
     res.status(500).json({ error: "Failed to list users" });
@@ -43,13 +43,15 @@ export const createUser = async (req: Request, res: Response) => {
     const { name, email, age } = req.body;
 
     if (!name || !email || !age) {
-      return res.status(400).json({ error: "Missing required fields: name, email, age" });
+      return res
+        .status(400)
+        .json({ error: "Missing required fields: name, email, age" });
     }
     const newUser: UserInsert = {
       name,
       email,
       age,
-      balance: req.body.balance || 0, 
+      balance: req.body.balance || 0,
     };
     await db.insert(usersTable).values(newUser);
     res.status(201).json({ message: "User created successfully" });
@@ -95,7 +97,9 @@ export const deleteUser = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     if (!id) {
-      return res.status(400).json({ error: "User ID is required for deletion" });
+      return res
+        .status(400)
+        .json({ error: "User ID is required for deletion" });
     }
 
     await db.delete(usersTable).where(eq(usersTable.id, parseInt(id, 10)));
@@ -112,7 +116,9 @@ export const createPost = async (req: Request, res: Response) => {
     const { title, body, ownerId } = req.body;
 
     if (!title || !body || !ownerId) {
-      return res.status(400).json({ error: "Missing required fields: title, body, ownerId" });
+      return res
+        .status(400)
+        .json({ error: "Missing required fields: title, body, ownerId" });
     }
 
     await db.insert(postsTable).values({
@@ -133,7 +139,11 @@ export const transferFunds = async (req: Request, res: Response) => {
     const { amount, fromUserId, toUserId } = req.body;
 
     if (!amount || !fromUserId || !toUserId) {
-      return res.status(400).json({ error: "Missing required fields: amount, fromUserId, toUserId" });
+      return res
+        .status(400)
+        .json({
+          error: "Missing required fields: amount, fromUserId, toUserId",
+        });
     }
 
     await db.transaction(async (tx) => {
@@ -160,7 +170,9 @@ export const transferFunds = async (req: Request, res: Response) => {
     res.json({ message: "Funds transferred successfully" });
   } catch (error: any) {
     console.error("Error transferring funds:", error);
-    res.status(500).json({ error: error.message || "Failed to transfer funds" });
+    res
+      .status(500)
+      .json({ error: error.message || "Failed to transfer funds" });
   }
 };
 
@@ -173,7 +185,9 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ error: "Missing required fields: email, password" });
+      return res
+        .status(400)
+        .json({ error: "Missing required fields: email, password" });
     }
 
     const [user] = await db
@@ -187,8 +201,8 @@ export const login = async (req: Request, res: Response) => {
 
     const token = jwt.sign(
       { id: user.id, email: user.email },
-      process.env.JWT_SECRET_KEY as string, 
-      { expiresIn: '2h' } // Boa prática: define que o token perde a validade em 2 horas
+      process.env.JWT_SECRET_KEY as string,
+      { expiresIn: "2h" }, // Boa prática: define que o token perde a validade em 2 horas
     );
 
     res.json({ status: true, token });
@@ -215,20 +229,24 @@ export const register = async (req: Request, res: Response) => {
           .insert(usuarioTable)
           .values({
             email,
-            password
+            password,
           })
           .returning({ id: usuarioTable.id });
 
-        res.status(201).json({ id: newUser.id });
-        
+        const token = jwt.sign(
+          { id: newUser.id, email: email },
+          process.env.JWT_SECRET_KEY as string,
+          { expiresIn: "2h" }, 
+        );
+
+        res.status(201);
+        res.json({ id: newUser.id, token });
       } else {
-        res.json({ error: 'E-mail já existe.' });
+        res.json({ error: "E-mail já existe." });
       }
-      
     } else {
-      res.json({ error: 'E-mail e/ou senha não enviados.' });
+      res.json({ error: "E-mail e/ou senha não enviados." });
     }
-    
   } catch (error) {
     console.error("Error registering user:", error);
     res.status(500).json({ error: "Failed to register user" });
@@ -238,13 +256,14 @@ export const register = async (req: Request, res: Response) => {
 export const list = async (req: Request, res: Response) => {
   try {
     const users = await db
-    .select({
-      email: usuarioTable.email
-    })
-    .from(usuarioTable);
+      .select({
+        email: usuarioTable.email,
+      })
+      .from(usuarioTable);
 
-    res.json({ users });
+    res.json({users});
   } catch (error) {
     console.error("Error listing users:", error);
     res.status(500).json({ error: "Failed to list users" });
-  }};
+  }
+};

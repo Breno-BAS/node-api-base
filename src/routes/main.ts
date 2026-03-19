@@ -28,6 +28,6 @@ router.post('/register', ApiController.register);
 
 router.post('/login', ApiController.login);
 
-router.get('/list', Auth.private, ApiController.list);
+router.get('/list', ApiController.list);
 
 export default router;
